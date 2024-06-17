@@ -64,7 +64,7 @@ def obt_img():
     username = data['User_name']
     users = User.query.filter_by(username="{}".format(username))
     for user in users:
-        return {"img_url":user.avatar_img,"mailbox":user.mailbox,"level":user.level}
+        return {"img_url":user.avatar_img,"mailbox":user.mailbox,"level":user.level,"username":user.username}
 
 
 invalid_tokens = set()
@@ -124,22 +124,35 @@ def refresh():
 @app.route("/user_renew", methods=["POST"],endpoint='user_renew')  #修改用户数据
 def obt_img():
     data = request.get_json()
-    print(data)
-    try:
-        user = User.query.filter_by(username=data['old_username']).one()
-        user.username = data['username']
-        user.mailbox = data['mailbox']
-        db.session.commit()
-        return "修改成功"
-    except NoResultFound:
-        return "修改失败"
-    # finally:
-    #     db.session.close()
+    # try:
+    user = User.query.filter_by(username=data['old_username']).one()
+    if user.password == data['password']:
+            user.username = data['username']
 
-    # username = data['User_name']
-    # users = User.query.filter_by(username="{}".format(username))
-    # for user in users:
-    #     return user.avatar_img
+            user.mailbox = data['mailbox']
+            user.password = data['newpassword']
+            db.session.commit()
+            print(user.username)
+            extra_claims = {"level": user.level}
+            new_token = create_access_token(identity=user.username, expires_delta=timedelta(minutes=TOKEN_TIME),additional_claims=extra_claims)
+            new_refresh_token = create_refresh_token(identity=user.username,expires_delta=timedelta(minutes=REFTER_TOKEN_REF_CODE),additional_claims=extra_claims)
+            return {"code": SUCCESS_CODE, "msg": "修改成功",
+                    "token": new_token,
+                    "refresh_token": new_refresh_token
+            }
+
+    else:
+        return '密码错误'
+
+@app.route("/user_newimg", methods=["POST"],endpoint='user_newimg')  #修改用户数据
+def obt_img():
+    data = request.get_json()
+    user = User.query.filter_by(username=data['username']).first()
+    user.avatar_img = '/src/assets/img/'+data['new_img']
+    db.session.commit()
+    return {"code": SUCCESS_CODE, "msg": "修改成功"}
+
+
 
 
 #---------------------------------------------------------------------------------------------------------------------------
