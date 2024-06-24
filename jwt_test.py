@@ -3,6 +3,7 @@ from flask import (Flask, request, jsonify)
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, create_refresh_token, get_jwt
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import null
 from sqlalchemy.exc import IntegrityError
 
 SUCCESS_CODE = 0  # 成功
@@ -55,8 +56,6 @@ def login():
         except Exception as e:
             return {"code": LOGIN_USER_ERROR_CODE, "msg": "error", "data": {}}
 
-
-
 @app.route("/user_info", methods=["POST"],endpoint='user_info')  #获取用户信息
 def obt_img():
     data = request.get_json()
@@ -65,7 +64,6 @@ def obt_img():
     for user in users:
         return {"img_url":user.avatar_img,"mailbox":user.mailbox,"level":user.level,"username":user.username}
 
-
 invalid_tokens = set()
 @app.route('/logout', methods=['GET'],endpoint='blog_user_dc')  #登出
 @jwt_required()
@@ -73,7 +71,6 @@ def logout():
     jwt_token = get_jwt()["jti"]
     invalid_tokens.add(jwt_token)
     return {"code": SUCCESS_CODE, "msg": "ok", "data": {}}
-
 
 @app.route("/regis", methods=["POST"],endpoint='blog_user_reg')  #注册
 def regis():
@@ -98,8 +95,6 @@ def regis():
                      "refresh_token": refresh_token,
                     }
             }
-
-
 
 @app.route("/refresh", methods=["POST"],endpoint='blog_user_ref')  #刷新token
 @jwt_required(refresh=True)
@@ -142,7 +137,7 @@ def obt_img():
         db.session.rollback()  # 回滚事务，确保数据库状态不变
         return {"msg":'账号或邮箱重复'}
 
-@app.route("/user_newimg", methods=["POST"],endpoint='user_newimg')  #修改用户数据
+@app.route("/user_newimg", methods=["POST"],endpoint='user_newimg')  #修改用户头像
 def obt_img():
     data = request.get_json()
     user = User.query.filter_by(username=data['username']).first()
@@ -150,14 +145,12 @@ def obt_img():
     db.session.commit()
     return {"code": SUCCESS_CODE, "msg": "修改成功"}
 
-
-
-
 #---------------------------------------------------------------------------------------------------------------------------
 
 class Gg(db.Model):
     __tablename__ = 'blog_gg'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    plate = db.Column(db.String(10), nullable=False)
     username = db.Column(db.String(100), nullable=False)
     the_me = db.Column(db.String(100), nullable=False)
     txt_html = db.Column(db.Text, nullable=False)
@@ -167,6 +160,7 @@ class Gg(db.Model):
 @app.route("/gg_pubart", methods=["POST"],endpoint='blog_gg')
 def regis():
     data = request.get_json()
+    plate = data['plate']
     username = data['username']
     the_me = data['the_me']
     txt_html = data['txt_html']
@@ -174,6 +168,7 @@ def regis():
     avatar_img =  data['avatar_img']
 
     newGg = Gg()
+    newGg.plate = plate
     newGg.username = username
     newGg.the_me = the_me
     newGg.txt_html = txt_html
@@ -244,6 +239,7 @@ def get_articles():
 class Cg(db.Model):
     __tablename__ = 'blog_cg'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    plate = db.Column(db.String(10), nullable=False)
     username = db.Column(db.String(100), nullable=False)
     the_me = db.Column(db.String(100), nullable=False)
     txt_html = db.Column(db.Text, nullable=False)
@@ -254,7 +250,7 @@ class Cg(db.Model):
 @app.route("/cg_pubart", methods=["POST"],endpoint='blog_cg')
 def regis():
     data = request.get_json()
-    print(data)
+    plate = data['plate']
     username = data['username']
     the_me = data['the_me']
     txt_html = data['txt_html']
@@ -267,6 +263,7 @@ def regis():
 
 
     newCg = Cg()
+    newCg.plate = plate
     newCg.username = username
     newCg.the_me = the_me
     newCg.txt_html = txt_html
@@ -346,6 +343,7 @@ def obt_img():
 class Zy(db.Model):
     __tablename__ = 'blog_zy'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    plate = db.Column(db.String(10), nullable=False)
     username = db.Column(db.String(100), nullable=False)
     the_me = db.Column(db.String(100), nullable=False)
     txt_html = db.Column(db.Text, nullable=False)
@@ -356,7 +354,7 @@ class Zy(db.Model):
 @app.route("/zy_pubart", methods=["POST"],endpoint='blog_zy')
 def regis():
     data = request.get_json()
-    print(data)
+    plate = data['plate']
     username = data['username']
     the_me = data['the_me']
     txt_html = data['txt_html']
@@ -369,6 +367,7 @@ def regis():
 
 
     newZy = Zy()
+    newZy.plate = plate
     newZy.username = username
     newZy.the_me = the_me
     newZy.txt_html = txt_html
@@ -448,6 +447,7 @@ def obt_img():
 class Jh(db.Model):
     __tablename__ = 'blog_jh'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    plate = db.Column(db.String(10), nullable=False)
     username = db.Column(db.String(100), nullable=False)
     the_me = db.Column(db.String(100), nullable=False)
     txt_html = db.Column(db.Text, nullable=False)
@@ -459,6 +459,7 @@ class Jh(db.Model):
 @app.route("/jh_pubart", methods=["POST"], endpoint='blog_jh')
 def regis():
     data = request.get_json()
+    plate = data['plate']
     username = data['username']
     the_me = data['the_me']
     txt_html = data['txt_html']
@@ -470,6 +471,7 @@ def regis():
         visible = 'false'
 
     newJh = Jh()
+    newJh.plate = plate
     newJh.username = username
     newJh.the_me = the_me
     newJh.txt_html = txt_html
@@ -541,6 +543,42 @@ def obt_img():
     article.visible = 'true'
     db.session.commit()
     return {"code": SUCCESS_CODE, "msg": "修改成功"}
+
+
+
+@app.route('/sear_port/<username>', methods=['POST'])
+def get_posts_by_username(username):
+    query_cg = db.session.query(Cg.plate.label('plate'), Cg.id.label('id'), Cg.username.label('username'),
+                                Cg.the_me.label('the_me'), Cg.txt.label('txt'), Cg.avatar_img.label('avatar_img'),
+                                Cg.visible.label('visible')).filter(Cg.username.ilike(f'%{username}%'))
+
+    query_gg = db.session.query(Gg.plate.label('plate'), Gg.id.label('id'), Gg.username.label('username'),
+                                Gg.the_me.label('the_me'), Gg.txt.label('txt'), Gg.avatar_img.label('avatar_img'),
+                                null().label('visible')).filter(Gg.username.ilike(f'%{username}%'))
+
+    query_jh = db.session.query(Jh.plate.label('plate'), Jh.id.label('id'), Jh.username.label('username'),
+                                Jh.the_me.label('the_me'), Jh.txt.label('txt'), Jh.avatar_img.label('avatar_img'),
+                                Jh.visible.label('visible')).filter(Jh.username.ilike(f'%{username}%'))
+
+    query_zy = db.session.query(Zy.plate.label('plate'), Zy.id.label('id'), Zy.username.label('username'),
+                                Zy.the_me.label('the_me'), Zy.txt.label('txt'), Zy.avatar_img.label('avatar_img'),
+                                Zy.visible.label('visible')).filter(Zy.username.ilike(f'%{username}%'))
+
+    combined_query = query_cg.union(query_gg, query_jh, query_zy)
+
+    # 将结果转换为期望的格式
+    posts = [{"plate": post.plate, "id": post.id, "username": post.username, "the_me": post.the_me,
+              "txt": post.txt, "avatar_img": post.avatar_img, "visible": post.visible, }
+             for post in combined_query]
+
+    return posts
+
+
+
+
+
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
