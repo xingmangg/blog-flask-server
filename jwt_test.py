@@ -571,7 +571,10 @@ def get_posts_by_username(username):
               "txt": post.txt, "avatar_img": post.avatar_img, "visible": post.visible, }
              for post in combined_query]
 
-    return posts
+    if posts == []:
+        return '对不起，没有找到匹配结果。'
+    else:
+        return posts
 
 
 
